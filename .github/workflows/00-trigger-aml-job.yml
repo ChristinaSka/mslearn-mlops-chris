@@ -32,6 +32,5 @@ jobs:
         az configure --defaults workspace="${{ github.event.inputs.aml_workspace }}"
     - name: Trigger Azure ML job
       run: |
-        cd experimentation
         az ml job create --file job_cl.yml --resource-group rg-dev-mlops --workspace-name  mlw-dev-mlops 
 
