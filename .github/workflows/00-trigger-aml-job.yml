@@ -1,4 +1,4 @@
-name: Stop compute instance
+name: Trigger an ML job in a cluster
 
 on:
   workflow_dispatch:
@@ -13,11 +13,6 @@ on:
         required: true
         default: 'mlw-dev-mlops' 
         type: string
-      compute:
-        description: 'Azure Machine Learning compute instance name'
-        required: true
-        default: 'dev-vm-chris' 
-        type: string
 
 jobs:
   build:
@@ -31,6 +26,12 @@ jobs:
       uses: azure/login@v1
       with:
         creds: ${{secrets.AZURE_CREDENTIALS}}
-    - name: Stop Azure Machine Learning compute instance
+    - name: Set Azure ML workspace as default
       run: |
-        az ml compute stop -n "${{ github.event.inputs.compute }}" -w "${{ github.event.inputs.aml_workspace }}" -g "${{ github.event.inputs.resource_group }}"
+        az configure --defaults group="${{ github.event.inputs.resource_group }}"
+        az configure --defaults workspace="${{ github.event.inputs.aml_workspace }}"
+    - name: Trigger Azure ML job
+      run: |
+        cd experimentation
+        az ml job create --file job_cl.yml --resource-group rg-dev-mlops --workspace-name  mlw-dev-mlops 
+
