@@ -1,0 +1,73 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Train and Deploy Model to a real time endpoint
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "Training"
+  Training:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    environment: dev-env
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Check out repo
+        uses: actions/checkout@main
+      - name: Install az ml extension
+        run: az extension add -n ml -y
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{secrets.AZURE_CREDENTIALS}}
+      - name: Set Azure ML workspace as default
+        run: |
+          az configure --defaults group="rg-dev-mlops"
+          az configure --defaults workspace="mlw-dev-mlops"
+      - name: Trigger Azure ML job for model training
+        run: |
+          cd src
+          az ml job create --file job_cl_hyper_param.yml 
+  
+  # This workflow contains a single job called "Deployment"
+  Deployment:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    environment: prod-env
+    needs: Training
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Check out repo
+        uses: actions/checkout@main
+      - name: Install az ml extension
+        run: az extension add -n ml -y
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{secrets.AZURE_CREDENTIALS}}
+      - name: Set Azure ML workspace as default
+        run: |
+          az configure --defaults group="rg-dev-mlops"
+          az configure --defaults workspace="mlw-dev-mlops"
+      # Runs a single command using the runners shell
+      - name: Create an online-endpoint
+        run: az ml online-endpoint create --name diabetes-endpoint -f src\create-endpoint.yml
+      - name: Register the model in the registry
+        run:  |
+          JOB_NAME=$(az ml job list --query "[0].name" | tr -d '"')
+          az ml model create --name "my-mlflow-model" \
+                   --type "mlflow_model" \
+                   --path "azureml://jobs/$JOB_NAME/outputs/artifacts/model"
+      - name: Deploy model to a real-time endpoint
+        run: az ml online-deployment create --name mlflow-deployment --endpoint diabetes-endpoint -f src\mlflow-deployment.yml --all-traffic
