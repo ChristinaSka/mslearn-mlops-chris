@@ -60,9 +60,9 @@ jobs:
         run: |
           az configure --defaults group="rg-dev-mlops"
           az configure --defaults workspace="mlw-dev-mlops"
-      # Runs a single command using the runners shell
+      # Runs a single command using the runners shell  
       - name: Create an online-endpoint
-        run: az ml online-endpoint create --name diabetes-endpoint -f src\create-endpoint.yml
+        run: az ml online-endpoint create --name diabetes-endpoint -f src/create-endpoint.yml
       - name: Register the model in the registry
         run:  |
           JOB_NAME=$(az ml job list --query "[0].name" | tr -d '"')
@@ -70,4 +70,5 @@ jobs:
                    --type "mlflow_model" \
                    --path "azureml://jobs/$JOB_NAME/outputs/artifacts/model"
       - name: Deploy model to a real-time endpoint
-        run: az ml online-deployment create --name mlflow-deployment --endpoint diabetes-endpoint -f src\mlflow-deployment.yml --all-traffic
+        run: |
+          az ml online-deployment create --name mlflow-deployment --endpoint diabetes-endpoint -f src/mlflow-deployment.yml --all-traffic
