@@ -12,7 +12,8 @@ from sklearn.linear_model import LogisticRegression
 # define functions
 def main(args):
     # enable auto logging
-    mlflow.autolog()
+    #mlflow.autolog()
+    #mlflow.autolog(disable=True)
 
     # read data
     df = get_csvs_df(args.training_data)
@@ -23,7 +24,13 @@ def main(args):
     # train model
     model = train_model(args.reg_rate, X_train, X_test, y_train, y_test)
     
+    #model_path = "model"
+    #model_uri = 
     
+    #from azureml.core import Workspace
+    #import mlflow
+    #ws = Workspace.from_config() 
+    #mlflow.set_tracking_uri(ws.get_mlflow_tracking_uri())
     
     
     return model
