@@ -22,29 +22,30 @@ jobs:
     environment: dev-env
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - name: Check out repo
-      uses: actions/checkout@main
-    - name: Install az ml extension
-      run: az extension add -n ml -y
-    - name: Azure login
-      uses: azure/login@v1
-      with:
-        creds: ${{secrets.AZURE_CREDENTIALS}}
-    - name: Set Azure ML workspace as default
-      run: |
-        az configure --defaults group="rg-dev-mlops"
-        az configure --defaults workspace="mlw-dev-mlops"
-    - name: Trigger Azure ML job
-      run: |
-        cd src
-        RUN_ID=$(az ml job create --file job.yml )
-        az ml model create --name diabetes-model --version 1 --path runs:/$RUN_ID/model/ --type mlflow_model
+      - name: Check out repo
+        uses: actions/checkout@main
+      - name: Install az ml extension
+        run: az extension add -n ml -y
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{secrets.AZURE_CREDENTIALS}}
+      - name: Set Azure ML workspace as default
+        run: |
+          az configure --defaults group="rg-dev-mlops"
+          az configure --defaults workspace="mlw-dev-mlops"
+      - name: Trigger Azure ML job
+        run: |
+          cd src
+          RUN_ID=$(az ml job create --file job.yml )
+          az ml model create --name diabetes-model --version 1 --path runs:/$RUN_ID/model/ --type mlflow_model
     
   # This workflow contains a single job called "Deployment"
   Deployment:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     environment: prod-env
+    needs: Training
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
