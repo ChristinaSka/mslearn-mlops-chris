@@ -1,10 +1,12 @@
 name: Hyperparam Change Trigger an ML job in a cluster
 
 on:
-  pull_request:
-    # Sequence of patterns matched against refs/heads
-    branches:    
-      - main
+  workflow_dispatch:
+#on:
+#  pull_request:
+#    # Sequence of patterns matched against refs/heads
+#    branches:    
+#      - main
 
 jobs:
   build:
