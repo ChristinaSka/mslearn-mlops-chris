@@ -12,9 +12,9 @@ from sklearn.linear_model import LogisticRegression
 # define functions
 def main(args):
     # enable auto logging
-    #mlflow.autolog()
-    #mlflow.autolog(disable=True)
-
+    #mlflow.autolog(log_models=True)
+    mlflow.autolog()
+    
     # read data
     df = get_csvs_df(args.training_data)
 

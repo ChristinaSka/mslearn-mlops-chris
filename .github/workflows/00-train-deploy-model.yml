@@ -34,7 +34,7 @@ jobs:
         run: |
           az configure --defaults group="rg-dev-mlops"
           az configure --defaults workspace="mlw-dev-mlops"
-      - name: Trigger Azure ML job
+      - name: Trigger Azure ML job for model training
         run: |
           cd src
           az ml job create --file job_cl_hyper_param.yml 
