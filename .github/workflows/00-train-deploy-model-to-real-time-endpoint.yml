@@ -37,7 +37,7 @@ jobs:
       - name: Trigger Azure ML job for model training
         run: |
           cd src
-          az ml job create --file job_cl_hyper_param.yml 
+          az ml job create --file job_cl_hyper_param.yml --stream
   
   # This workflow contains a single job called "Deployment"
   Deployment:
@@ -62,7 +62,7 @@ jobs:
           az configure --defaults workspace="mlw-dev-mlops"
       # Runs a single command using the runners shell  
       - name: Create an online-endpoint
-        run: az ml online-endpoint create --name diabetes-endpoint -f src/create-endpoint.yml
+        run: az ml online-endpoint create --name diabetes-endpoint-v1 -f src/create-endpoint.yml
       - name: Register the model in the registry
         run:  |
           JOB_NAME=$(az ml job list --query "[0].name" | tr -d '"')
